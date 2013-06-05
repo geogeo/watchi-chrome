@@ -5,6 +5,10 @@
 // This is a sample app to show how to use our push messaging service.
 // This function gets called in the packaged app model on launch.
 var WATCHI_SERVER = "http://127.0.0.1:5000"
+userinfo='';
+channelId='';
+chrome.storage.local.set({'userinfo':userinfo})
+chrome.storage.local.set({'channelId':channelId})
 
 chrome.app.runtime.onLaunched.addListener(function() {
   // stuff to do when the app is launched
@@ -13,7 +17,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
   // You likely wouldn't do this every time your app launches,
   // but we do it here so we can help debugging by showing the channelId
     // every time.
-    if (!chrome.storage.local['chrome.storage.local']){
+    if (!userinfo || !channelId){
       firstTimePushSetup();
     }
   
@@ -40,13 +44,37 @@ chrome.runtime.onSuspend.addListener(function() {
   console.log("Push Messaging Sample Client shutting down");
 });
 
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+  for (key in changes) {
+    var storageChange = changes[key];
+    if(key=='userinfo'){
+      userinfo = storageChange.newValue;
+    }else if(key=='channelId'){
+      channelId = storageChange.newValue;
+    }
+    console.log('Storage key "%s" in namespace "%s" changed. ' +
+                'Old value was "%s", new value is "%s".',
+                key,
+                namespace,
+                storageChange.oldValue,
+                storageChange.newValue);
+    if(userinfo && channelId){
+      console.log('both login and got channelId')
+      registerChannelIdToWatchiServer(userinfo,channelId);
+    }
+  }
+});
+
 // This should only be called once on the instance of chrome where the app
 // is first installed for this user.  It need not be called every time the
 // Push Messaging Client App starts.
 function firstTimePushSetup() {
   // Start fetching the channel ID (it will arrive in the callback).
   chrome.pushMessaging.getChannelId(true, channelIdCallback);
+  // chrome.app.window.create('index.html', { "bounds": { "width": 1024, "height": 768 } });
   console.log("getChannelId returned.  Awaiting callback...");
+  chrome.app.window.create('index.html', { "bounds": { "width": 1024, "height": 768 } });
+  console.log("get user info return. awarting callback..")
 }
 
 // Register for push messages.
@@ -97,12 +125,11 @@ function messageCallback(message) {
 // }
 function channelIdCallback(details){
   var channelId = details.channelId;
-  console.log("channelId callback and id is"+channelId);
-  registerChannelIdToWatchiServer(channelId);
   chrome.storage.local.set({"channelId":channelId});
+  console.log("channelId callback and id is"+channelId);
 }
 
-function registerChannelIdToWatchiServer(channelId){
+function registerChannelIdToWatchiServer(userinfo,channelId){
   console.log("sending channel id to server");
   var registerRequest = new XMLHttpRequest();
   registerRequest.open('POST', WATCHI_SERVER+'/register_chrome', true);
@@ -116,7 +143,8 @@ function registerChannelIdToWatchiServer(channelId){
       }
     }
   }
-  registerRequest.send('email='+chrome.storage.local['useremail']+"&channelId="+channelId)}
+  userinfo_js = JSON.parse(userinfo)
+  registerRequest.send('email='+userinfo_js.email+"&token="+userinfo_js.auth_token+"&channelId="+channelId)}
 
 // When a Push Message arrives, show it as a text notification (toast)
 function showPushMessage(payload, subChannel) {
@@ -126,3 +154,5 @@ function showPushMessage(payload, subChannel) {
       payload +" [" + subChannel + "]");
   notification.show();
 }
+
+

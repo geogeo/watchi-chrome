@@ -4,12 +4,18 @@
   "description":
     "Receive notifications from your Android phone",
   "icons": {"16": "16.png", "48": "48.png", "128": "128.png"},
-  "permissions": ["storage", "notifications","pushMessaging","https://www.googleapis.com/chromewebstore/v1.1/notifications","http://localhost/*"],
+ "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDvxrZY7O+RqOAFyX3YgFiaiy+gcZmaSgym7aGlSqazSPnjfXou7sBe/3d9vLLRHh5RROOIq9J/czdY1kitwC2CLwWFGzhvl9XDV7p9uhhsFi+39nyBhBxE4wIpM2/vi602RI1iZn9WhNEy7/J2Qx9C6WpIb1IFqUgG0UlL0CA+tQIDAQAB",
+  "permissions": ["storage", "notifications","pushMessaging","https://www.googleapis.com/chromewebstore/v1.1/notifications","http://127.0.0.1:5000/register_chrome","experimental"],
+  
   "options_page": "options.html",
-   "app": {
+  "app": {
     "background": {
       "scripts": ["background.js"]
     }
   },
-  "manifest_version": 2
+  "manifest_version": 2,
+  "oauth2": {
+    "client_id": "829441271914-af6n6h8irpmknf64pbq2pu32p306t5s5.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/gcm_for_chrome"]
+  }
 }

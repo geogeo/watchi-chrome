@@ -1,16 +1,18 @@
 var WATCHI_SERVER = "http://127.0.0.1:5000"
 
 chrome.pushMessaging.onMessage.addListener(onReceiveMessage);
-var login_input = document.getElementById("login-email")
-var login_div = document.getElementById("login")
-localStorage = chrome.storage.local;
+
+var userinfo;
+var localStorage = chrome.storage.local;
+
+function getUserInfo(){
+  chrome.storage.local.get('userinfo',function(resp){
+    userinfo = resp.userinfo
+  })
+}
 if (!localStorage.getItem("channelId"))
   login_div.style.display = "block";
 
-function onClickRegister(){
-  localStorage.setItem("useremail",login_input.value)
-  fetchChannelId();
-}
 
 function fetchChannelId(){
   chrome.pushMessageing.getChannelId(false, channelIdCallback);
@@ -34,12 +36,12 @@ function registerChannelIdToWatchiServer(channelId){
         console.log("register sucess!");
       }else{
         console.log("Error sending XHR status is"+registerRequest.statusText)
-        // TODO need resent buttun?
+        // TODO: need resent buttun?
       }
     }
   }
-
-  registerRequest.send('email='+localStorage.getItem("useremail")+"&channelId="+channelId)
+  
+  registerRequest.send('access_token='+eval(localStorage.getItem("userinfo")).access_token+"&channelId="+channelId)
 }
 
 function onReceiveMessage(details){
